@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stealth AI Revenue Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            color: #2d3748;
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: #718096;
+            font-size: 0.9em;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .stat-label {
+            color: #718096;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            color: #2d3748;
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-change {
+            color: #48bb78;
+            font-size: 0.9em;
+        }
+
+        .stat-change.negative {
+            color: #f56565;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .panel {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .panel h2 {
+            color: #2d3748;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .offer-list {
+            list-style: none;
+        }
+
+        .offer-item {
+            padding: 15px;
+            margin: 10px 0;
+            background: #f7fafc;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .offer-title {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 5px;
+        }
+
+        .offer-meta {
+            font-size: 0.85em;
+            color: #718096;
+        }
+
+        .offer-price {
+            color: #667eea;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75em;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-left: 10px;
+        }
+
+        .status-active {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .status-draft {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            margin: 5px;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #48bb78;
+        }
+
+        .btn-secondary:hover {
+            background: #38a169;
+        }
+
+        .btn-danger {
+            background: #f56565;
+        }
+
+        .btn-danger:hover {
+            background: #e53e3e;
+        }
+
+        .recommendations {
+            list-style: none;
+        }
+
+        .recommendation {
+            padding: 12px;
+            margin: 8px 0;
+            background: #fef5e7;
+            border-left: 4px solid #f39c12;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+
+        .actions {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #e2e8f0;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #718096;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e2e8f0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 Stealth AI Revenue Dashboard</h1>
+            <p class="subtitle">Automated revenue generation through signal compression and micro-offers</p>
+        </header>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Revenue</div>
+                <div class="stat-value" id="total-revenue">$0.00</div>
+                <div class="stat-change">+0% this month</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">Active Offers</div>
+                <div class="stat-value" id="active-offers">0</div>
+                <div class="stat-change">0 deployed today</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">Conversions</div>
+                <div class="stat-value" id="conversions">0</div>
+                <div class="stat-change">0% avg conversion rate</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">Email Subscribers</div>
+                <div class="stat-value" id="subscribers">0</div>
+                <div class="stat-change">Building audience</div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>📊 Revenue Goal Progress</h2>
+            <p><strong>Target:</strong> $8,700/month</p>
+            <div class="progress-bar">
+                <div class="progress-fill" id="revenue-progress" style="width: 0%">0%</div>
+            </div>
+            <p id="days-to-goal" style="margin-top: 10px; color: #718096;"></p>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="panel">
+                <h2>💎 Active Offers</h2>
+                <ul class="offer-list" id="offers-list">
+                    <li class="loading">Loading offers...</li>
+                </ul>
+                <div class="actions">
+                    <button class="btn" onclick="generateOffers()">🎯 Generate New Offers</button>
+                    <button class="btn btn-secondary" onclick="scanSignals()">🔍 Scan Signals</button>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>🎯 Growth Recommendations</h2>
+                <ul class="recommendations" id="recommendations">
+                    <li class="loading">Loading recommendations...</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>⚡ Quick Actions</h2>
+            <button class="btn" onclick="deployAllDrafts()">🚀 Deploy All Drafts</button>
+            <button class="btn btn-secondary" onclick="distributeContent()">📱 Distribute Content</button>
+            <button class="btn" onclick="postScheduled()">📤 Post Scheduled Content</button>
+            <button class="btn btn-danger" onclick="checkReinvestment()">💰 Check Reinvestment</button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api';
+
+        async function fetchDashboard() {
+            try {
+                const response = await fetch(`${API_BASE}/analytics/dashboard`);
+                const data = await response.json();
+
+                // Update stats
+                document.getElementById('total-revenue').textContent = `$${data.total_revenue.toFixed(2)}`;
+                document.getElementById('active-offers').textContent = data.active_offers;
+                document.getElementById('conversions').textContent = data.total_conversions;
+                document.getElementById('subscribers').textContent = data.email_subscribers;
+
+                // Update progress bar
+                const progress = (data.total_revenue / data.prediction.target) * 100;
+                document.getElementById('revenue-progress').style.width = `${Math.min(progress, 100)}%`;
+                document.getElementById('revenue-progress').textContent = `${progress.toFixed(1)}%`;
+
+                // Update days to goal
+                const daysText = data.prediction.days_to_goal === Infinity 
+                    ? 'Start generating revenue to see projection'
+                    : `${Math.ceil(data.prediction.days_to_goal)} days to reach monthly goal`;
+                document.getElementById('days-to-goal').textContent = daysText;
+
+                // Update recommendations
+                const recsEl = document.getElementById('recommendations');
+                if (data.recommendations.length > 0) {
+                    recsEl.innerHTML = data.recommendations.map(r => 
+                        `<li class="recommendation">${r}</li>`
+                    ).join('');
+                } else {
+                    recsEl.innerHTML = '<li class="recommendation">No recommendations at this time</li>';
+                }
+
+            } catch (error) {
+                console.error('Error fetching dashboard:', error);
+            }
+        }
+
+        async function fetchOffers() {
+            try {
+                const response = await fetch(`${API_BASE}/offers?limit=10`);
+                const data = await response.json();
+
+                const offersEl = document.getElementById('offers-list');
+                
+                if (data.offers.length > 0) {
+                    offersEl.innerHTML = data.offers.map(offer => `
+                        <li class="offer-item">
+                            <div class="offer-title">
+                                ${offer.title}
+                                <span class="status-badge status-${offer.status}">${offer.status}</span>
+                            </div>
+                            <div class="offer-meta">
+                                ${offer.offer_type} 
+                                <span class="offer-price">$${offer.price}</span>
+                                ${offer.landing_page_url ? `<br><a href="${offer.landing_page_url}" target="_blank">View Landing Page</a>` : ''}
+                            </div>
+                        </li>
+                    `).join('');
+                } else {
+                    offersEl.innerHTML = '<li class="loading">No offers yet. Click "Generate New Offers" to get started!</li>';
+                }
+
+            } catch (error) {
+                console.error('Error fetching offers:', error);
+            }
+        }
+
+        async function scanSignals() {
+            if (confirm('Start scanning signals from all platforms?')) {
+                try {
+                    await fetch(`${API_BASE}/signals/scan`, { method: 'POST' });
+                    alert('✅ Signal scan initiated! Check back in a few minutes.');
+                } catch (error) {
+                    alert('Error scanning signals: ' + error.message);
+                }
+            }
+        }
+
+        async function generateOffers() {
+            if (confirm('Generate 3 new offers from top signals?')) {
+                try {
+                    const response = await fetch(`${API_BASE}/offers/generate?batch_size=3`, { 
+                        method: 'POST' 
+                    });
+                    const data = await response.json();
+                    alert(`✅ Generated ${data.offers.length} new offers!`);
+                    fetchOffers();
+                    fetchDashboard();
+                } catch (error) {
+                    alert('Error generating offers: ' + error.message);
+                }
+            }
+        }
+
+        async function deployAllDrafts() {
+            // In a real implementation, this would deploy all draft offers
+            alert('This would deploy all draft offers (not yet implemented in this demo)');
+        }
+
+        async function distributeContent() {
+            alert('This would schedule content distribution (not yet implemented in this demo)');
+        }
+
+        async function postScheduled() {
+            if (confirm('Post all scheduled content?')) {
+                try {
+                    await fetch(`${API_BASE}/distribution/post-scheduled`, { method: 'POST' });
+                    alert('✅ Scheduled content posted!');
+                } catch (error) {
+                    alert('Error posting content: ' + error.message);
+                }
+            }
+        }
+
+        async function checkReinvestment() {
+            try {
+                const response = await fetch(`${API_BASE}/scaling/reinvest`, { method: 'POST' });
+                const data = await response.json();
+                alert(`✅ Reinvestment executed!\n\nAllocation:\n${JSON.stringify(data.allocation, null, 2)}`);
+            } catch (error) {
+                alert('Reinvestment threshold not met yet. Keep growing!');
+            }
+        }
+
+        // Refresh data every 30 seconds
+        setInterval(() => {
+            fetchDashboard();
+            fetchOffers();
+        }, 30000);
+
+        // Initial load
+        fetchDashboard();
+        fetchOffers();
+    </script>
+</body>
+</html>
